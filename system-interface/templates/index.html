@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link href="/static/style.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Emergency Triage System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --primary-hover: #3a56d4;
+      --secondary-color: #f8f9fa;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --border-radius: 12px;
+    }
+    
+    body {
+      background-color: #f5f7fb;
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    }
+
+    /* CTAS Color Standards (Add this to all files) */
+    .badge-resuscitation {
+        background-color: #d10000;  /* Bright red - Resuscitation (L1) */
+        color: white;
+    }
+
+    .badge-emergent {
+        background-color: #ff6600;  /* Orange - Emergent (L2) */
+        color: white;
+    }
+
+    .badge-urgent {
+        background-color: #ffcc00;  /* Yellow - Urgent (L3) */
+        color: #212529;  /* Dark text for contrast */
+    }
+
+    .badge-less-urgent {
+        background-color: #33cc33;  /* Green - Less Urgent (L4) */
+        color: white;
+    }
+
+    .badge-non-urgent {
+        background-color: #3399ff;  /* Blue - Non-Urgent (L5) */
+        color: white;
+    }
+    
+    .navbar {
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 1rem 0;
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .nav-link {
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+    
+    .form-container {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--card-shadow);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    h4 {
+      color: var(--primary-color);
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .form-label {
+      font-weight: 500;
+      color: #495057;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid #e0e0e0;
+      transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      border-radius: 8px;
+      padding: 0.6rem 1.5rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      border-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+    
+    .btn-outline-secondary {
+      border-radius: 8px;
+      padding: 0.6rem 1.5rem;
+      font-weight: 500;
+    }
+    
+    .modal-header {
+      border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    }
+    
+    .badge {
+      font-weight: 500;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+    }
+    
+    .bg-danger {
+      background-color: #ef233c !important;
+    }
+    
+    .bg-warning {
+      background-color: #ff9e00 !important;
+    }
+    
+    .bg-info {
+      background-color: #00b4d8 !important;
+    }
+    
+    @media (max-width: 768px) {
+      .form-container {
+        padding: 1.5rem;
+      }
+      
+      .navbar-brand {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+          <a class="navbar-brand" href="/">
+            <i class="bi bi-heart-pulse-fill"></i> AI Emergency Triage
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav ms-auto">
+              <a class="nav-link active" href="/"><i class="bi bi-person-plus me-1"></i> Add Patient</a>
+              <a class="nav-link" href="/records"><i class="bi bi-table me-1"></i> View Records</a>
+              <a class="nav-link" href="/history"><i class="bi bi-clock-history me-1"></i> Treatment History</a>
+              <a class="nav-link" href="/reports"><i class="bi bi-bar-chart me-1"></i> Reports</a>
+              <a class="nav-link" href="/archive"><i class="bi bi-archive me-1"></i> Archive</a>
+          </div>
+          </div>
+        </div>
+      </nav>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-12">
+        <div class="form-container">
+          <form id="patientForm" method="POST" action="#">
+            <h4><i class="bi bi-clipboard2-pulse me-2"></i>Patient Information</h4>
+            <div class="row g-4">
+              <div class="col-md-4 col-lg-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="name" class="form-control" placeholder="John Doe" required />
+              </div>
+      
+              <div class="col-md-4 col-lg-2">
+                <label class="form-label">Gender</label>
+                <select name="gender" class="form-select" required>
+                  <option value="" disabled selected>Select</option>
+                  <option value="0">Male</option>
+                  <option value="1">Female</option>
+                </select>
+              </div>
+      
+              <div class="col-md-4 col-lg-2">
+                <label class="form-label">Age</label>
+                <input type="number" step="any" name="age" class="form-control" placeholder="35" required />
+              </div>
+              
+              <div class="col-md-6 col-lg-3">
+                <label class="form-label">Primary Symptom</label>
+                <select name="Symptom" class="form-select" required>
+                  <option value="" disabled selected>Select symptom</option>
+                  <option value="Abdominal pain">Abdominal pain</option>
+                  <option value="Chest pain">Chest pain</option>
+                  <option value="Difficulty breathing">Difficulty breathing</option>
+                  <option value="Fever">Fever</option>
+                  <option value="Headache">Headache</option>
+                  <option value="Weakness">Weakness</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Consciousness</label>
+                <select name="Consciousness" class="form-select" required>
+                  <option value="" disabled selected>Select state</option>
+                  <option value="Awake">Awake</option>
+                  <option value="Responds to Pain">Responds to Pain</option>
+                  <option value="Unconscious">Unconscious</option>
+                </select>
+              </div>
+              
+              <div class="col-12 mt-3">
+                <h5 class="text-muted"><i class="bi bi-heart me-2"></i>Cardiac Assessment</h5>
+                <hr class="my-2">
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Chest Pain Type (0-3)</label>
+                <input type="number" name="chest_pain_type" class="form-control" min="0" max="3" placeholder="0" required />
+              </div>
+      
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Cholesterol (mg/dL)</label>
+                <input type="number" name="cholesterol" class="form-control" min="0" placeholder="200" required />
+              </div>
+      
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Exercise Angina</label>
+                <select name="exercise_angina" class="form-select" required>
+                  <option value="" disabled selected>Select</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Heart Rate (bpm)</label>
+                <input type="number" name="heart_rate" class="form-control" min="30" max="200" placeholder="72" required />
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Blood Pressure</label>
+                <input type="text" name="bp" class="form-control" pattern="\d{1,3}/\d{1,3}" placeholder="120/80" required />
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Heart Disease</label>
+                <select name="heart_disease" class="form-select" required>
+                  <option value="" disabled selected>Select</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              
+              <div class="col-12 mt-3">
+                <h5 class="text-muted"><i class="bi bi-lungs me-2"></i>Respiratory Assessment</h5>
+                <hr class="my-2">
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Respiratory Rate</label>
+                <input type="number" name="Respiratory_Rate" class="form-control" min="5" max="50" placeholder="16" required />
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">SpO₂ (%)</label>
+                <input type="number" name="spo2" class="form-control" min="50" max="100" placeholder="98" required />
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Respiratory Distress</label>
+                <select name="Resp_Distress" class="form-select" required>
+                  <option value="" disabled selected>Select</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              
+              <div class="col-12 mt-3">
+                <h5 class="text-muted"><i class="bi bi-droplet me-2"></i>Vital Signs</h5>
+                <hr class="my-2">
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Temperature (°C)</label>
+                <input type="number" step="0.1" name="Temperature" class="form-control" min="30" max="45" placeholder="36.6" required/>
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Glasgow Score</label>
+                <input type="number" name="glasgow" class="form-control" min="3" max="15" placeholder="15" required />
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Massive Bleeding</label>
+                <select name="Massive_Bleeding" class="form-select" required>
+                  <option value="" disabled selected>Select</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              
+              <div class="col-12 mt-3">
+                <h5 class="text-muted"><i class="bi bi-clipboard2-data me-2"></i>Medical History</h5>
+                <hr class="my-2">
+              </div>
+              
+              <div class="col-md-6 col-lg-3">
+                <label class="form-label">Risk Factors</label>
+                <select name="Risk" class="form-select" required>
+                  <option value="" disabled selected>Select risk factor</option>
+                  <option value="none risk factor">None</option>
+                  <option value="Cancer">Cancer</option>
+                  <option value="Cardiovascular disease">Cardiovascular disease</option>
+                  <option value="Diabetes">Diabetes</option>
+                  <option value="Hypertension">Hypertension</option>
+                  <option value="kidney failure">Kidney failure</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 col-lg-3">
+                <label class="form-label">Hypertension</label>
+                <select name="hypertension" class="form-select" required>
+                  <option value="" disabled selected>Select</option>
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 col-lg-3">
+                <label class="form-label">Residence Type</label>
+                <select name="Residence" class="form-select" required>
+                  <option value="" disabled selected>Select residence</option>
+                  <option value="Rural">Rural</option>
+                  <option value="Urban">Urban</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 col-lg-3">
+                <label class="form-label">Smoking Status</label>
+                <select name="smoking" class="form-select" required>
+                  <option value="" disabled selected>Select status</option>
+                  <option value="Unknown">Unknown</option>
+                  <option value="formerly smoked">Formerly smoked</option>
+                  <option value="never smoked">Never smoked</option>
+                  <option value="smokes">Currently smokes</option>
+                </select>
+              </div>
+              
+              <div class="col-12 mt-3">
+                <h5 class="text-muted"><i class="bi bi-file-medical me-2"></i>Additional Metrics</h5>
+                <hr class="my-2">
+              </div>
+              
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Plasma Glucose</label>
+                <input type="number" name="plasma_glucose" class="form-control" min="0" placeholder="90" required />
+              </div>
+      
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">Skin Thickness</label>
+                <input type="number" name="skin_thickness" class="form-control" min="0" placeholder="23" required />
+              </div>
+      
+              <div class="col-md-6 col-lg-2">
+                <label class="form-label">BMI</label>
+                <input type="number" step="0.1" name="bmi" class="form-control" min="0" placeholder="22.5" required />
+              </div>
+              
+              <div class="col-12 mt-4 d-flex justify-content-end">
+                <button class="btn btn-outline-secondary me-3" type="reset">
+                  <i class="bi bi-eraser me-1"></i> Clear
+                </button>
+                <button class="btn btn-primary" type="submit">
+                  <i class="bi bi-send-check me-1"></i> Submit Assessment
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Result Modal -->
+  <div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title"><i class="bi bi-clipboard2-pulse me-2"></i>Triage Assessment Result</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-success border-0 shadow-sm">
+            <div class="d-flex align-items-center mb-3">
+              <i class="bi bi-check-circle-fill fs-3 me-3"></i>
+              <h4 class="mb-0">Assessment Complete</h4>
+            </div>
+            <div id="resultContent" class="ps-4"></div>
+          </div>
+          <div class="d-grid gap-3">
+            <a href="/records" class="btn btn-primary">
+              <i class="bi bi-table me-2"></i> View All Records
+            </a>
+            <button class="btn btn-outline-primary" data-bs-dismiss="modal">
+              <i class="bi bi-plus-circle me-2"></i> Add Another Patient
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('patientForm');
+      
+      form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          // Show loading state
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalBtnText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+          submitBtn.disabled = true;
+          
+          fetch('/predict', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: new URLSearchParams(new FormData(form))
+          })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json();
+          })
+          .then(data => {
+              if (data.success) {
+                  // Show result modal
+                  const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+                  document.getElementById('resultContent').innerHTML = `
+                      <div class="mb-3">
+                          <strong>Patient Name:</strong> <span class="float-end">${data.name}</span>
+                      </div>
+                      <div class="mb-3">
+                          <strong>Classification:</strong> 
+                          <span class="float-end badge ${getSeverityBadgeClass(data.severity)}">
+                              ${data.severity}
+                          </span>
+                      </div>
+                      <div>
+                          <strong>Urgency Score:</strong> <span class="float-end">${data.score.toFixed(2)}</span>
+                      </div>
+                  `;
+                  modal.show();
+              } else {
+                  alert('Error: ' + data.error);
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('Submission failed: ' + error.message);
+          })
+          .finally(() => {
+              submitBtn.innerHTML = originalBtnText;
+              submitBtn.disabled = false;
+          });
+      });
+
+      function getSeverityBadgeClass(severity) {
+          switch(severity) {
+              case 'Resuscitation': return 'badge-resuscitation';
+              case 'Emergent': return 'badge-emergent';
+              case 'Urgent': return 'badge-urgent';
+              case 'Less Urgent': return 'badge-less-urgent';
+              case 'Non-Urgent': return 'badge-non-urgent';
+              default: return 'bg-secondary';
+          }
+      }
+  });
+  </script>
+</body>
+</html>
