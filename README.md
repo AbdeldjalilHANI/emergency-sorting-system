@@ -91,8 +91,8 @@ This project is a machine learning-based triage system designed to prioritize pa
 
 Feel free to reach out if you'd like to collaborate, contribute, or ask questions!
 
-- GitHub: [your-username](https://github.com/your-username)
-- Email: your.email@example.com
+- GitHub: [AbdeldjalilHANI](https://github.com/your-username)
+- Email: abdeldjalilhani0@gmail.com
 
 ---
 
